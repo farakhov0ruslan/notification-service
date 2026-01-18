@@ -1,0 +1,69 @@
+[[tool.uv.index]]
+name = "core"
+url = "https://gitlab.infra.salestrigger.io/api/v4/groups/2/-/packages/pypi/simple"
+authenticate = "always"
+
+[project]
+name = "notification-service"
+version = "0.0.1"
+description = "Notification Service - gRPC service for send Notification for users"
+authors = [
+    {name = "Farahov Ruslan", email = "farakhov0ruslan@hmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12.4,<4.0"
+dependencies = [
+    "utils-library[full]>=0.0.120",
+    "dishka>=1.6.0",
+    "schedule >=1.2.2",
+    "alembic-postgresql-enum >= 1.7.0",
+    "apify_client"
+]
+
+[dependency-groups]
+test = [
+    "utils-library[testing]>=0.0.113",
+]
+
+# --- RUFF CONFIG START
+[tool.ruff]
+exclude = [
+    "proto",
+]
+
+[tool.ruff.lint]
+select = ["I", "F", "E", "W", "S", "B", "C4", "PIE", "T20", "SIM", "TID", "ERA"]
+ignore = [
+    "B008",
+    "E501",
+    "S104",
+    'S608', # TEMP IGNORE <--- SQL INJECTION
+    'S311', # Rand int error
+    "S101", # assert errors
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+"*_pb2.py" = ['E712', 'ERA001']
+"__init__.py" = ["F401"]
+"tests/*.py" = ["S101"]
+"test/*.py" = ['S101']
+
+[tool.ruff.lint.isort]
+force-single-line=true
+
+# --- RUFF CONFIG END
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest]
+addopts = "--cov=linkedin_data_provider --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disable_error_code = ["import-untyped"]
+packages=["notification_service/"]
+exclude=["notification_service/migrations", "tests"]

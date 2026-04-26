@@ -5,4 +5,5 @@ include:
 variables:
   MIGRATION_TYPE: "alembic"
   TEST_GROUP: "python-full"
+  PACKAGE_PUBLISH: "uv"
   LINT: "ruff"

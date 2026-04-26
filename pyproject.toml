@@ -21,7 +21,6 @@ dependencies = [
     "aiosmtplib>=5.0.0",
     "jinja2>=3.1.6",
     "notification-registry==0.0.1rc1+local.b5399a5",
-    "email-handler==0.0.1rc1+local.0f168cb",
     "grpcio>=1.60",
     "grpcio-tools>=1.60",
     "fire>=0.6",

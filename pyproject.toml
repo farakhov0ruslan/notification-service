@@ -68,9 +68,9 @@ ignore = [
 force-single-line=true
 
 # --- RUFF CONFIG END
-[tool.uv.sources]
-notification-registry = { path = "../notification-registry" }
-email-handler = { path = "../email-handler" }
+#[tool.uv.sources]
+#notification-registry = { path = "../notification-registry" }
+#email-handler = { path = "../email-handler" }
 
 [tool.setuptools.packages.find]
 include = ["notification_service*"]

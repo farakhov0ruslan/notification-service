@@ -96,7 +96,6 @@ class NotificationBase(SQLModel):
 
     scheduled_at: Optional[datetime] = Field(default=None, index=True)
     sent_at: Optional[datetime] = Field(default=None)
-    delivered_at: Optional[datetime] = Field(default=None)
 
 
 class NotificationTable(BaseUUIDModel, NotificationBase, table=True):

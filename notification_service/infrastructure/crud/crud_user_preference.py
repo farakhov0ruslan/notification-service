@@ -4,6 +4,7 @@ from uuid import UUID
 
 from notification_registry import NotificationChannel
 from notification_registry import NotificationType
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import delete
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -142,9 +143,15 @@ class CRUDUserPreference(
         if not defaults:
             return []
 
-        for pref in defaults:
-            self.session.add(pref)
-        await self.session.commit()
-        for pref in defaults:
-            await self.session.refresh(pref)
-        return defaults
+        try:
+            for pref in defaults:
+                self.session.add(pref)
+            await self.session.commit()
+            for pref in defaults:
+                await self.session.refresh(pref)
+            return defaults
+        except IntegrityError:
+            # Concurrent request already inserted preferences — roll back and return theirs.
+            await self.session.rollback()
+            existing = await self.get_by_user_and_type(user_id, notification_type)
+            return list(existing)

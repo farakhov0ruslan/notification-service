@@ -6,6 +6,10 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+from pydantic import AnyUrl
+from pydantic import EmailStr
+from pydantic import TypeAdapter
+
 import dishka
 import fire
 import grpc
@@ -50,12 +54,10 @@ def _notification_to_item(n: NotificationTable) -> pb2.NotificationItem:
         status=n.status.value,
         recipient_id=str(n.recipient_id) if n.recipient_id else None,
         recipient_email=n.recipient_email,
-        subject=n.subject,
         last_error=n.last_error,
         retry_count=n.retry_count,
         scheduled_at=_dt_to_str(n.scheduled_at),
         sent_at=_dt_to_str(n.sent_at),
-        delivered_at=_dt_to_str(n.delivered_at),
         created_at=_dt_to_str(n.created_at) if hasattr(n, "created_at") else "",
     )
 
@@ -294,7 +296,6 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
             channel=message.metadata.channel,
             priority=message.metadata.priority,
             status=NotificationStatus.PENDING,
-            subject=request.subject if request.HasField("subject") else None,
             template_data=message.payload.model_dump(mode="json"),
             scheduled_at=scheduled_at,
         )
@@ -347,7 +348,6 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
                 retry_count=notification.retry_count,
                 scheduled_at=_dt_to_str(notification.scheduled_at),
                 sent_at=_dt_to_str(notification.sent_at),
-                delivered_at=_dt_to_str(notification.delivered_at),
                 created_at=_dt_to_str(notification.created_at) if hasattr(notification, "created_at") else "",
             )
 
@@ -511,6 +511,23 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
             LOGGER.exception("SetUserPreferences failed", exc_info=e)
             return pb2.SetUserPreferencesResponse(success=False, message=str(e))
 
+    @staticmethod
+    def _validate_recipient_address(channel: NotificationChannel, addr: Optional[str]) -> None:
+        if addr is None:
+            return
+        try:
+            if channel == NotificationChannel.EMAIL:
+                TypeAdapter(EmailStr).validate_python(addr)
+            elif channel == NotificationChannel.WEBHOOK:
+                TypeAdapter(AnyUrl).validate_python(addr)
+            elif channel == NotificationChannel.WHATSAPP:
+                from notification_registry.models.base import PhoneNumber
+                PhoneNumber(number=addr)
+        except Exception as exc:
+            raise ValueError(
+                f"Invalid recipient_address for channel {channel.value!r}: {exc}"
+            ) from exc
+
     async def _set_user_preferences(self, request):
         user_id = UUID(request.user_id)
         notification_type = NotificationType(request.notification_type)
@@ -519,8 +536,10 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
         for p in request.preferences:
             channel = NotificationChannel(p.channel)
             addr = p.recipient_address if p.HasField("recipient_address") else None
-            if channel == NotificationChannel.PLATFORM and not addr:
-                addr = str(user_id)
+            if channel == NotificationChannel.PLATFORM:
+                addr = None  # PLATFORM uses user_id from payload implicitly
+            else:
+                self._validate_recipient_address(channel, addr)
             entries.append(
                 UserNotificationPreferenceTable(
                     user_id=user_id,

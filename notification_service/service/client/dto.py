@@ -18,7 +18,6 @@ class SendNotificationRequest(BaseModel):
     recipient_email: str | None = None
     recipient_phone: str | None = None
     webhook_url: str | None = None
-    subject: str | None = None
     scheduled_at: str | None = None
 
     model_config = {"arbitrary_types_allowed": True}
@@ -59,7 +58,6 @@ class NotificationStatusResult(BaseModel):
     retry_count: int = 0
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None
-    delivered_at: Optional[str] = None
     created_at: Optional[str] = None
 
     @property
@@ -90,12 +88,10 @@ class NotificationItem(BaseModel):
     status: str
     recipient_id: Optional[str] = None
     recipient_email: Optional[str] = None
-    subject: Optional[str] = None
     last_error: Optional[str] = None
     retry_count: int = 0
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None
-    delivered_at: Optional[str] = None
     created_at: str
 
 

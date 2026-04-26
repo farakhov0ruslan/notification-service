@@ -146,8 +146,6 @@ class CRUDNotification(
 
         if status == NotificationStatus.SENT:
             notification.sent_at = datetime.utcnow()
-        elif status == NotificationStatus.DELIVERED:
-            notification.delivered_at = datetime.utcnow()
 
         await self.session.commit()
         await self.session.refresh(notification)

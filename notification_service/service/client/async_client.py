@@ -37,8 +37,6 @@ async def grpc_send_notification(
         kwargs["recipient_phone"] = request.recipient_phone
     if request.webhook_url is not None:
         kwargs["webhook_url"] = request.webhook_url
-    if request.subject is not None:
-        kwargs["subject"] = request.subject
     if request.scheduled_at is not None:
         kwargs["scheduled_at"] = request.scheduled_at
 
@@ -78,7 +76,6 @@ async def grpc_get_notification_status(
         retry_count=response.retry_count,
         scheduled_at=response.scheduled_at if response.HasField("scheduled_at") else None,
         sent_at=response.sent_at if response.HasField("sent_at") else None,
-        delivered_at=response.delivered_at if response.HasField("delivered_at") else None,
         created_at=response.created_at or None,
     )
 
@@ -133,12 +130,10 @@ async def grpc_list_notifications(
             status=n.status,
             recipient_id=n.recipient_id if n.HasField("recipient_id") else None,
             recipient_email=n.recipient_email if n.HasField("recipient_email") else None,
-            subject=n.subject if n.HasField("subject") else None,
             last_error=n.last_error if n.HasField("last_error") else None,
             retry_count=n.retry_count,
             scheduled_at=n.scheduled_at if n.HasField("scheduled_at") else None,
             sent_at=n.sent_at if n.HasField("sent_at") else None,
-            delivered_at=n.delivered_at if n.HasField("delivered_at") else None,
             created_at=n.created_at,
         )
         for n in response.notifications

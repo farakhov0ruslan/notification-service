@@ -22,7 +22,8 @@ message SendNotificationRequest {
     optional string recipient_email = 5;
     optional string recipient_phone = 6;
     optional string webhook_url = 7;
-    optional string subject = 8;
+    reserved 8;
+    reserved "subject";
     string payload_json = 9;
     optional string scheduled_at = 10;
 }
@@ -51,7 +52,8 @@ message GetNotificationStatusResponse {
     int32 retry_count = 7;
     optional string scheduled_at = 8;
     optional string sent_at = 9;
-    optional string delivered_at = 10;
+    reserved 10;
+    reserved "delivered_at";
     string created_at = 11;
 }
 
@@ -86,12 +88,14 @@ message NotificationItem {
     string status = 5;
     optional string recipient_id = 6;
     optional string recipient_email = 7;
-    optional string subject = 8;
+    reserved 8;
+    reserved "subject";
     optional string last_error = 9;
     int32 retry_count = 10;
     optional string scheduled_at = 11;
     optional string sent_at = 12;
-    optional string delivered_at = 13;
+    reserved 13;
+    reserved "delivered_at";
     string created_at = 14;
 }
 

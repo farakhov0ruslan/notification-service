@@ -7,7 +7,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class SendNotificationRequest(_message.Message):
-    __slots__ = ("notification_type", "channel", "priority", "recipient_id", "recipient_email", "recipient_phone", "webhook_url", "subject", "payload_json", "scheduled_at")
+    __slots__ = ("notification_type", "channel", "priority", "recipient_id", "recipient_email", "recipient_phone", "webhook_url", "payload_json", "scheduled_at")
     NOTIFICATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     CHANNEL_FIELD_NUMBER: _ClassVar[int]
     PRIORITY_FIELD_NUMBER: _ClassVar[int]
@@ -15,7 +15,6 @@ class SendNotificationRequest(_message.Message):
     RECIPIENT_EMAIL_FIELD_NUMBER: _ClassVar[int]
     RECIPIENT_PHONE_FIELD_NUMBER: _ClassVar[int]
     WEBHOOK_URL_FIELD_NUMBER: _ClassVar[int]
-    SUBJECT_FIELD_NUMBER: _ClassVar[int]
     PAYLOAD_JSON_FIELD_NUMBER: _ClassVar[int]
     SCHEDULED_AT_FIELD_NUMBER: _ClassVar[int]
     notification_type: str
@@ -25,10 +24,9 @@ class SendNotificationRequest(_message.Message):
     recipient_email: str
     recipient_phone: str
     webhook_url: str
-    subject: str
     payload_json: str
     scheduled_at: str
-    def __init__(self, notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., recipient_id: _Optional[str] = ..., recipient_email: _Optional[str] = ..., recipient_phone: _Optional[str] = ..., webhook_url: _Optional[str] = ..., subject: _Optional[str] = ..., payload_json: _Optional[str] = ..., scheduled_at: _Optional[str] = ...) -> None: ...
+    def __init__(self, notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., recipient_id: _Optional[str] = ..., recipient_email: _Optional[str] = ..., recipient_phone: _Optional[str] = ..., webhook_url: _Optional[str] = ..., payload_json: _Optional[str] = ..., scheduled_at: _Optional[str] = ...) -> None: ...
 
 class SendNotificationResponse(_message.Message):
     __slots__ = ("success", "notification_id", "status", "message", "notification_ids")
@@ -51,7 +49,7 @@ class GetNotificationStatusRequest(_message.Message):
     def __init__(self, notification_id: _Optional[str] = ...) -> None: ...
 
 class GetNotificationStatusResponse(_message.Message):
-    __slots__ = ("success", "notification_id", "status", "channel", "notification_type", "last_error", "retry_count", "scheduled_at", "sent_at", "delivered_at", "created_at")
+    __slots__ = ("success", "notification_id", "status", "channel", "notification_type", "last_error", "retry_count", "scheduled_at", "sent_at", "created_at")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     NOTIFICATION_ID_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -61,7 +59,6 @@ class GetNotificationStatusResponse(_message.Message):
     RETRY_COUNT_FIELD_NUMBER: _ClassVar[int]
     SCHEDULED_AT_FIELD_NUMBER: _ClassVar[int]
     SENT_AT_FIELD_NUMBER: _ClassVar[int]
-    DELIVERED_AT_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     success: bool
     notification_id: str
@@ -72,9 +69,8 @@ class GetNotificationStatusResponse(_message.Message):
     retry_count: int
     scheduled_at: str
     sent_at: str
-    delivered_at: str
     created_at: str
-    def __init__(self, success: bool = ..., notification_id: _Optional[str] = ..., status: _Optional[str] = ..., channel: _Optional[str] = ..., notification_type: _Optional[str] = ..., last_error: _Optional[str] = ..., retry_count: _Optional[int] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., delivered_at: _Optional[str] = ..., created_at: _Optional[str] = ...) -> None: ...
+    def __init__(self, success: bool = ..., notification_id: _Optional[str] = ..., status: _Optional[str] = ..., channel: _Optional[str] = ..., notification_type: _Optional[str] = ..., last_error: _Optional[str] = ..., retry_count: _Optional[int] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., created_at: _Optional[str] = ...) -> None: ...
 
 class CancelNotificationRequest(_message.Message):
     __slots__ = ("notification_id",)
@@ -109,7 +105,7 @@ class ListNotificationsRequest(_message.Message):
     def __init__(self, recipient_id: _Optional[str] = ..., status: _Optional[str] = ..., channel: _Optional[str] = ..., limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
 class NotificationItem(_message.Message):
-    __slots__ = ("notification_id", "notification_type", "channel", "priority", "status", "recipient_id", "recipient_email", "subject", "last_error", "retry_count", "scheduled_at", "sent_at", "delivered_at", "created_at")
+    __slots__ = ("notification_id", "notification_type", "channel", "priority", "status", "recipient_id", "recipient_email", "last_error", "retry_count", "scheduled_at", "sent_at", "created_at")
     NOTIFICATION_ID_FIELD_NUMBER: _ClassVar[int]
     NOTIFICATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     CHANNEL_FIELD_NUMBER: _ClassVar[int]
@@ -117,12 +113,10 @@ class NotificationItem(_message.Message):
     STATUS_FIELD_NUMBER: _ClassVar[int]
     RECIPIENT_ID_FIELD_NUMBER: _ClassVar[int]
     RECIPIENT_EMAIL_FIELD_NUMBER: _ClassVar[int]
-    SUBJECT_FIELD_NUMBER: _ClassVar[int]
     LAST_ERROR_FIELD_NUMBER: _ClassVar[int]
     RETRY_COUNT_FIELD_NUMBER: _ClassVar[int]
     SCHEDULED_AT_FIELD_NUMBER: _ClassVar[int]
     SENT_AT_FIELD_NUMBER: _ClassVar[int]
-    DELIVERED_AT_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     notification_id: str
     notification_type: str
@@ -131,14 +125,12 @@ class NotificationItem(_message.Message):
     status: str
     recipient_id: str
     recipient_email: str
-    subject: str
     last_error: str
     retry_count: int
     scheduled_at: str
     sent_at: str
-    delivered_at: str
     created_at: str
-    def __init__(self, notification_id: _Optional[str] = ..., notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., status: _Optional[str] = ..., recipient_id: _Optional[str] = ..., recipient_email: _Optional[str] = ..., subject: _Optional[str] = ..., last_error: _Optional[str] = ..., retry_count: _Optional[int] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., delivered_at: _Optional[str] = ..., created_at: _Optional[str] = ...) -> None: ...
+    def __init__(self, notification_id: _Optional[str] = ..., notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., status: _Optional[str] = ..., recipient_id: _Optional[str] = ..., recipient_email: _Optional[str] = ..., last_error: _Optional[str] = ..., retry_count: _Optional[int] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., created_at: _Optional[str] = ...) -> None: ...
 
 class ListNotificationsResponse(_message.Message):
     __slots__ = ("success", "notifications", "total")

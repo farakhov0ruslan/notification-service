@@ -50,83 +50,6 @@ class NotificationDatabaseConfiguration(AbstractMetaConfig):
 
 
 @dataclass
-class RabbitMQConfiguration(AbstractMetaConfig):
-    host: str = field(
-        default="127.0.0.1",
-        metadata={
-            "docs": "RabbitMQ host",
-            "required": False,
-        },
-    )
-
-    port: int = field(
-        default=5672,
-        metadata={
-            "docs": "RabbitMQ port",
-            "required": False,
-        },
-    )
-
-    user: str = field(
-        default="guest",
-        metadata={
-            "docs": "RabbitMQ user",
-            "required": False,
-            "hidden": True,
-        },
-    )
-
-    password: str = field(
-        default="guest",
-        metadata={
-            "docs": "RabbitMQ password",
-            "required": False,
-            "hidden": True,
-        },
-    )
-
-    virtual_host: str = field(
-        default="/",
-        metadata={
-            "docs": "RabbitMQ virtual host",
-            "required": False,
-        },
-    )
-
-    email_queue: str = field(
-        default="notification.email",
-        metadata={
-            "docs": "Email notification queue name",
-            "required": False,
-        },
-    )
-
-    platform_queue: str = field(
-        default="notification.platform",
-        metadata={
-            "docs": "Platform notification queue name",
-            "required": False,
-        },
-    )
-
-    whatsapp_queue: str = field(
-        default="notification.whatsapp",
-        metadata={
-            "docs": "WhatsApp notification queue name",
-            "required": False,
-        },
-    )
-
-    webhook_queue: str = field(
-        default="notification.webhook",
-        metadata={
-            "docs": "Webhook notification queue name",
-            "required": False,
-        },
-    )
-
-
-@dataclass
 class NotificationRetryConfiguration(AbstractMetaConfig):
     max_retries: int = field(
         default=3,
@@ -154,5 +77,4 @@ class NotificationRetryConfiguration(AbstractMetaConfig):
 
 
 NOTIFICATION_DATABASE = NotificationDatabaseConfiguration()
-RABBITMQ_CONFIG = RabbitMQConfiguration()
 NOTIFICATION_RETRY = NotificationRetryConfiguration()

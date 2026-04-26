@@ -10,6 +10,8 @@ from sqlalchemy import pool
 from utils_library.DataBase.driver import DataBaseEngine
 from notification_service.infrastructure.base import NotificationBase  # noqa
 from notification_service.infrastructure.models.base_uuid_model import BasicTable  # noqa
+from notification_service.infrastructure.models.notification import NotificationTable  # noqa
+from notification_service.infrastructure.models.user_preference import UserNotificationPreferenceTable  # noqa
 from utils_library.AlchemyRepository.schemas import BaseUUIDModel, SQLModel
 from notification_service.tables import NotificationDB
 from utils_library.Logging.log import get_logger

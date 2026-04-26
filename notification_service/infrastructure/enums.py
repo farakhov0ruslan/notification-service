@@ -26,30 +26,3 @@ class NotificationStatus(EnumType):
             NotificationStatus.QUEUED,
             NotificationStatus.PROCESSING,
         )
-
-
-class NotificationChannel(EnumType):
-    EMAIL = "EMAIL"
-    PLATFORM = "PLATFORM"
-    WHATSAPP = "WHATSAPP"
-    WEBHOOK = "WEBHOOK"
-
-
-class NotificationType(EnumType):
-    SYSTEM_ALERT = "SYSTEM_ALERT"
-    USER_WELCOME = "USER_WELCOME"
-    USER_PASSWORD_RESET = "USER_PASSWORD_RESET"
-    LEAD_UPDATE = "LEAD_UPDATE"
-    CAMPAIGN_STATUS = "CAMPAIGN_STATUS"
-    REPORT_READY = "REPORT_READY"
-    SUBSCRIPTION_EXPIRING = "SUBSCRIPTION_EXPIRING"
-    PAYMENT_RECEIVED = "PAYMENT_RECEIVED"
-    PAYMENT_FAILED = "PAYMENT_FAILED"
-    CUSTOM = "CUSTOM"
-
-
-class NotificationPriority(EnumType):
-    LOW = "LOW"
-    NORMAL = "NORMAL"
-    HIGH = "HIGH"
-    URGENT = "URGENT"

@@ -2,6 +2,9 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+from notification_registry import NotificationChannel
+from notification_registry import NotificationPriority
+from notification_registry import NotificationType
 from sqlalchemy import JSON
 from sqlalchemy import TEXT
 from sqlmodel import Column
@@ -10,10 +13,7 @@ from sqlmodel import Field
 from sqlmodel import SQLModel
 from utils_library.AlchemyRepository import BaseUUIDModel
 
-from notification_service.infrastructure.enums import NotificationChannel
-from notification_service.infrastructure.enums import NotificationPriority
 from notification_service.infrastructure.enums import NotificationStatus
-from notification_service.infrastructure.enums import NotificationType
 from notification_service.tables import NotificationDB
 
 
@@ -34,6 +34,7 @@ class NotificationBase(SQLModel):
                 schema=NotificationDB.notification.schema,
                 name="notificationtype",
                 create_type=True,
+                values_callable=lambda x: [e.value for e in x],
             ),
             index=True,
         )
@@ -46,6 +47,7 @@ class NotificationBase(SQLModel):
                 schema=NotificationDB.notification.schema,
                 name="notificationchannel",
                 create_type=True,
+                values_callable=lambda x: [e.value for e in x],
             ),
             index=True,
         )
@@ -59,6 +61,7 @@ class NotificationBase(SQLModel):
                 schema=NotificationDB.notification.schema,
                 name="notificationpriority",
                 create_type=True,
+                values_callable=lambda x: [e.value for e in x],
             ),
             index=True,
         ),

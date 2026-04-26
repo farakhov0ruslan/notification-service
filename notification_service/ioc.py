@@ -15,7 +15,9 @@ from utils_library.DataBase.configurations import DataBaseConfig
 from utils_library.DataBase.schema import DataBaseEngine
 
 from notification_service.infrastructure.crud import CRUDNotification
+from notification_service.infrastructure.crud import CRUDUserPreference
 from notification_service.infrastructure.models import NotificationTable
+from notification_service.infrastructure.models import UserNotificationPreferenceTable
 from notification_service.tables import NotificationDB
 
 NotificationStorageSession = NewType("NotificationStorageSession", AsyncSession)
@@ -24,6 +26,7 @@ NotificationStorageSession = NewType("NotificationStorageSession", AsyncSession)
 @dataclass
 class NotificationRepository:
     notifications: CRUDNotification
+    user_preferences: CRUDUserPreference
 
 
 def new_session_maker(
@@ -74,12 +77,22 @@ class NotificationStorageProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    async def user_preferences_repo(
+        self, async_session: NotificationStorageSession
+    ) -> CRUDUserPreference:
+        return crud.build_dependency_repository(
+            CRUDUserPreference, UserNotificationPreferenceTable
+        )(async_session)
+
+    @provide(scope=Scope.REQUEST)
     async def full_repo(
         self,
         notifications: CRUDNotification,
+        user_preferences: CRUDUserPreference,
     ) -> NotificationRepository:
         return NotificationRepository(
             notifications=notifications,
+            user_preferences=user_preferences,
         )
 
 

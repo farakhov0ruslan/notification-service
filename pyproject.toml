@@ -20,17 +20,29 @@ dependencies = [
     "apify_client",
     "aiosmtplib>=5.0.0",
     "jinja2>=3.1.6",
+    "notification-registry",
+    "email-handler",
+    "grpcio>=1.60",
+    "grpcio-tools>=1.60",
+    "fire>=0.6",
+    "greenlet>=3.0",
 ]
 
 [dependency-groups]
 test = [
     "utils-library[testing]>=0.0.113",
+    "pytest>=8",
+    "pytest-mock",
+    "pytest-cov",
+    "pytest-asyncio>=0.23",
+    "aiosqlite>=0.20",
+    "polyfactory>=2",
 ]
 
 # --- RUFF CONFIG START
 [tool.ruff]
 exclude = [
-    "proto",
+    "notification_service/service/proto",
 ]
 
 [tool.ruff.lint]
@@ -50,17 +62,30 @@ ignore = [
 "__init__.py" = ["F401"]
 "tests/*.py" = ["S101"]
 "test/*.py" = ['S101']
+"notification_service/workers/**" = ["ERA001", "S701", "S110", "SIM105"]
 
 [tool.ruff.lint.isort]
 force-single-line=true
 
 # --- RUFF CONFIG END
+[tool.uv.sources]
+notification-registry = { path = "../notification-registry" }
+email-handler = { path = "../email-handler" }
+
+[tool.setuptools.packages.find]
+include = ["notification_service*"]
+
 [build-system]
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest]
-addopts = "--cov=linkedin_data_provider --cov-report=term-missing"
+[tool.pytest.ini_options]
+addopts = "--cov=notification_service --cov-report=term-missing"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+omit = ["notification_service/workers/**", "notification_service/migrations/**"]
 
 [tool.mypy]
 python_version = "3.12"

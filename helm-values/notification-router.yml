@@ -23,8 +23,8 @@ notification-router:
       monitoring.salestrigger/scrape: "true"
     ports:
       - name: metrics
-        port: 9091
-        targetPort: 9091
+        port: 9090
+        targetPort: 9090
         protocol: TCP
 
   command: ["/bin/bash", "-c"]

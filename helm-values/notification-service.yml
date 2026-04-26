@@ -23,12 +23,12 @@ notification-service:
       monitoring.salestrigger/scrape: "true"
     ports:
       - name: grpc
-        port: 46600
-        targetPort: 46600
+        port: 80
+        targetPort: 8888
         protocol: TCP
       - name: metrics
-        port: 9092
-        targetPort: 9092
+        port: 9090
+        targetPort: 9090
         protocol: TCP
 
   command: ["/bin/bash", "-c"]

@@ -11,8 +11,8 @@ from notification_registry import ResetPasswordPayload
 from notification_registry import deserialize_message
 
 from notification_service.dispatcher import dispatch
-from tests.utils.factories import ResetPasswordPayloadFactory
 from tests.utils.factories import WEBHOOK_URL
+from tests.utils.factories import ResetPasswordPayloadFactory
 from tests.utils.factories import WebhookAnalyticsPayloadFactory
 from tests.utils.factories import WebhookResetPasswordPayloadFactory
 
@@ -65,9 +65,14 @@ class TestLocalPipeline:
 
         _, body = client.published[0]
         deserialized = deserialize_message(body)
-        assert deserialized.metadata.notification_type == NotificationType.RESET_PASSWORD
+        assert (
+            deserialized.metadata.notification_type == NotificationType.RESET_PASSWORD
+        )
         assert deserialized.metadata.channel == NotificationChannel.EMAIL
-        assert deserialized.payload.recipient_email == reset_password_payload.recipient_email
+        assert (
+            deserialized.payload.recipient_email
+            == reset_password_payload.recipient_email
+        )
 
     def test_multiple_messages_stored_in_published(self, reset_password_payload):
         client = LocalNotificationClient()
@@ -131,12 +136,16 @@ class TestWebhookLocalPipeline:
 
         _, body = client.published[0]
         deserialized = deserialize_message(body)
-        assert deserialized.metadata.notification_type == NotificationType.RESET_PASSWORD
+        assert (
+            deserialized.metadata.notification_type == NotificationType.RESET_PASSWORD
+        )
         assert deserialized.metadata.channel == NotificationChannel.WEBHOOK
 
     def test_analytics_payload_published_to_webhook_queue(self):
         payload = WebhookAnalyticsPayloadFactory.build()
-        message = _build_webhook_message(payload, notification_type=NotificationType.ANALYTICS)
+        message = _build_webhook_message(
+            payload, notification_type=NotificationType.ANALYTICS
+        )
         client = LocalNotificationClient()
 
         with client:

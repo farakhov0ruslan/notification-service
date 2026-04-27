@@ -9,6 +9,7 @@ which causes InvalidTextRepresentationError on INSERT in PostgreSQL.
 These tests catch the mismatch by reading back the raw stored string from SQLite.
 SQLite stores UUIDs as hex strings without hyphens, so we use nid.hex in WHERE.
 """
+
 from uuid import uuid4
 
 from notification_registry import NotificationChannel
@@ -29,20 +30,24 @@ def _make_session_maker(engine):
 async def _insert_and_read_raw(engine, column: str) -> str | None:
     nid = uuid4()
     async with _make_session_maker(engine)() as s:
-        s.add(NotificationTable(
-            id=nid,
-            notification_type=NotificationType.RESET_PASSWORD,
-            channel=NotificationChannel.EMAIL,
-            priority=NotificationPriority.NORMAL,
-            status=NotificationStatus.PENDING,
-        ))
+        s.add(
+            NotificationTable(
+                id=nid,
+                notification_type=NotificationType.RESET_PASSWORD,
+                channel=NotificationChannel.EMAIL,
+                priority=NotificationPriority.NORMAL,
+                status=NotificationStatus.PENDING,
+            )
+        )
         await s.commit()
 
     async with _make_session_maker(engine)() as s:
-        row = (await s.execute(
-            text(f'SELECT {column} FROM "NotificationTable" WHERE id = :id'),
-            {"id": nid.hex},  # SQLite stores UUID as hex without hyphens
-        )).fetchone()
+        row = (
+            await s.execute(
+                text(f'SELECT {column} FROM "NotificationTable" WHERE id = :id'),
+                {"id": nid.hex},  # SQLite stores UUID as hex without hyphens
+            )
+        ).fetchone()
 
     return row[0] if row else None
 

@@ -31,12 +31,8 @@ async def grpc_send_notification(
         kwargs["priority"] = pr.value if isinstance(pr, NotificationPriority) else pr
     if request.recipient_id is not None:
         kwargs["recipient_id"] = request.recipient_id
-    if request.recipient_email is not None:
-        kwargs["recipient_email"] = request.recipient_email
-    if request.recipient_phone is not None:
-        kwargs["recipient_phone"] = request.recipient_phone
-    if request.webhook_url is not None:
-        kwargs["webhook_url"] = request.webhook_url
+    if request.recipient_address is not None:
+        kwargs["recipient_address"] = request.recipient_address
     if request.scheduled_at is not None:
         kwargs["scheduled_at"] = request.scheduled_at
 
@@ -73,8 +69,9 @@ async def grpc_get_notification_status(
         channel=response.channel or None,
         notification_type=response.notification_type or None,
         last_error=response.last_error if response.HasField("last_error") else None,
-        retry_count=response.retry_count,
-        scheduled_at=response.scheduled_at if response.HasField("scheduled_at") else None,
+        scheduled_at=response.scheduled_at
+        if response.HasField("scheduled_at")
+        else None,
         sent_at=response.sent_at if response.HasField("sent_at") else None,
         created_at=response.created_at or None,
     )
@@ -129,9 +126,10 @@ async def grpc_list_notifications(
             priority=n.priority,
             status=n.status,
             recipient_id=n.recipient_id if n.HasField("recipient_id") else None,
-            recipient_email=n.recipient_email if n.HasField("recipient_email") else None,
+            recipient_address=n.recipient_address
+            if n.HasField("recipient_address")
+            else None,
             last_error=n.last_error if n.HasField("last_error") else None,
-            retry_count=n.retry_count,
             scheduled_at=n.scheduled_at if n.HasField("scheduled_at") else None,
             sent_at=n.sent_at if n.HasField("sent_at") else None,
             created_at=n.created_at,
@@ -166,7 +164,9 @@ async def grpc_get_user_preferences(
             user_id=p.user_id,
             notification_type=p.notification_type,
             channel=p.channel,
-            recipient_address=p.recipient_address if p.HasField("recipient_address") else None,
+            recipient_address=p.recipient_address
+            if p.HasField("recipient_address")
+            else None,
         )
         for p in response.preferences
     ]
@@ -187,7 +187,11 @@ async def grpc_set_user_preferences(
             user_id=p.user_id,
             notification_type=p.notification_type,
             channel=p.channel,
-            **({"recipient_address": p.recipient_address} if p.recipient_address is not None else {}),
+            **(
+                {"recipient_address": p.recipient_address}
+                if p.recipient_address is not None
+                else {}
+            ),
         )
         for p in preferences
     ]
@@ -223,20 +227,17 @@ if __name__ == "__main__":
     configure_logger(__name__, "debug")
     LOGGER = get_logger(__name__)
 
-    _SMOKE_CHANNELS: list[tuple[NotificationChannel, dict]] = [
-        (
-            NotificationChannel.EMAIL,
-            {"recipient_email": "test@example.com"},
-        ),
+    _SMOKE_CHANNELS: list[tuple[NotificationChannel, str]] = [
+        (NotificationChannel.EMAIL, "farakhov0ruslan@gmail.com"),
         (
             NotificationChannel.WEBHOOK,
-            {"webhook_url": "https://webhook.site/36306d30-36d9-43ea-8f84-5d5022ecce22"},
+            "https://webhook.site/36306d30-36d9-43ea-8f84-5d5022ecce22",
         ),
     ]
 
     async def _send_for_channel(
         channel: NotificationChannel,
-        extra: dict,
+        recipient_address: str,
     ) -> str | None:
         payload = ResetPasswordPayload(
             user_id=uuid4(),
@@ -245,14 +246,19 @@ if __name__ == "__main__":
             user_name="Test User",
             user_ip="127.0.0.1",
             user_agent="Mozilla/5.0 (smoke-test)",
-            **extra,
+            recipient_email=recipient_address
+            if channel == NotificationChannel.EMAIL
+            else None,
+            webhook_url=recipient_address
+            if channel == NotificationChannel.WEBHOOK
+            else None,
         )
         result = await grpc_send_notification(
             SendNotificationRequest(
                 notification_type=NotificationType.RESET_PASSWORD,
                 channel=channel,
                 payload=payload,
-                **extra,
+                recipient_address=recipient_address,
             )
         )
         LOGGER.info(
@@ -268,10 +274,12 @@ if __name__ == "__main__":
         LOGGER.info("=" * 60)
 
         # ── 1. SendNotification for each channel ──────────────────
-        LOGGER.info(f"[1] SendNotification → channels: {[c.value for c, _ in _SMOKE_CHANNELS]}")
+        LOGGER.info(
+            f"[1] SendNotification → channels: {[c.value for c, _ in _SMOKE_CHANNELS]}"
+        )
         sent_ids: dict[NotificationChannel, str] = {}
-        for channel, extra in _SMOKE_CHANNELS:
-            nid = await _send_for_channel(channel, extra)
+        for channel, addr in _SMOKE_CHANNELS:
+            nid = await _send_for_channel(channel, addr)
             if nid:
                 sent_ids[channel] = nid
 

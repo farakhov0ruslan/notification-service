@@ -1,6 +1,5 @@
 import asyncio
 
-import pytest
 from notification_registry import LocalNotificationClient
 from notification_registry import NotificationChannel
 from notification_registry import NotificationMessage
@@ -18,7 +17,9 @@ from tests.utils.factories import ResetPasswordPayloadFactory
 from tests.utils.factories import WebhookResetPasswordPayloadFactory
 
 
-def _make_message(channel: NotificationChannel = NotificationChannel.EMAIL) -> NotificationMessage:
+def _make_message(
+    channel: NotificationChannel = NotificationChannel.EMAIL,
+) -> NotificationMessage:
     payload = (
         WebhookResetPasswordPayloadFactory.build()
         if channel == NotificationChannel.WEBHOOK
@@ -38,7 +39,9 @@ def _make_session_maker(engine):
     return async_sessionmaker(class_=AsyncSession, expire_on_commit=False, bind=engine)
 
 
-def _create_notification(engine, message: NotificationMessage, status=NotificationStatus.PENDING) -> None:
+def _create_notification(
+    engine, message: NotificationMessage, status=NotificationStatus.PENDING
+) -> None:
     notification = NotificationTable(
         id=message.metadata.notification_id,
         notification_type=message.metadata.notification_type,

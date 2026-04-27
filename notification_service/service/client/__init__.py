@@ -1,5 +1,7 @@
 from notification_service.service.client.async_client import grpc_cancel_notification
-from notification_service.service.client.async_client import grpc_get_notification_status
+from notification_service.service.client.async_client import (
+    grpc_get_notification_status,
+)
 from notification_service.service.client.async_client import grpc_get_user_preferences
 from notification_service.service.client.async_client import grpc_list_notifications
 from notification_service.service.client.async_client import grpc_send_notification

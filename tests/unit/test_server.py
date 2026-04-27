@@ -22,17 +22,21 @@ def _build_request(payload, notification_type="reset_password", channel="email")
     request.notification_type = notification_type
     request.channel = channel
     request.HasField = lambda field: field not in (
-        "priority", "recipient_id", "scheduled_at", "subject",
-        "recipient_phone", "webhook_url",
+        "priority",
+        "recipient_id",
+        "scheduled_at",
     )
-    request.recipient_email = payload.recipient_email
+    request.recipient_address = payload.recipient_email
     request.payload_json = payload.model_dump_json()
     return request
+
 
 # TODO: надо использовать патченный ioc
 def _get_notification(engine, notification_id_str: str) -> NotificationTable | None:
     async def _async():
-        sm = async_sessionmaker(class_=AsyncSession, expire_on_commit=False, bind=engine)
+        sm = async_sessionmaker(
+            class_=AsyncSession, expire_on_commit=False, bind=engine
+        )
         async with sm() as s:
             result = await s.exec(
                 select(NotificationTable).where(
@@ -45,12 +49,16 @@ def _get_notification(engine, notification_id_str: str) -> NotificationTable | N
 
 
 class TestSendNotification:
-    def test_success_persists_notification_to_db(self, engine, reset_password_payload, mocker):
+    def test_success_persists_notification_to_db(
+        self, engine, reset_password_payload, mocker
+    ):
         from notification_service.service.server import NotificationServiceServicer
 
         patched_publisher(mocker)
         servicer = NotificationServiceServicer()
-        response = servicer.SendNotification(_build_request(reset_password_payload), MagicMock())
+        response = servicer.SendNotification(
+            _build_request(reset_password_payload), MagicMock()
+        )
 
         assert response.success is True
         assert response.status == NotificationStatus.PENDING.value
@@ -60,14 +68,18 @@ class TestSendNotification:
         assert notification.status == NotificationStatus.PENDING
         assert notification.channel == NotificationChannel.EMAIL
         assert notification.notification_type == NotificationType.RESET_PASSWORD
-        assert notification.recipient_email == reset_password_payload.recipient_email
+        assert notification.recipient_address == reset_password_payload.recipient_email
 
-    def test_success_publishes_valid_notification_message(self, engine, reset_password_payload, mocker):
+    def test_success_publishes_valid_notification_message(
+        self, engine, reset_password_payload, mocker
+    ):
         from notification_service.service.server import NotificationServiceServicer
 
         publisher = patched_publisher(mocker)
         servicer = NotificationServiceServicer()
-        response = servicer.SendNotification(_build_request(reset_password_payload), MagicMock())
+        response = servicer.SendNotification(
+            _build_request(reset_password_payload), MagicMock()
+        )
 
         assert response.success is True
         publisher.publish.assert_called_once()
@@ -77,24 +89,32 @@ class TestSendNotification:
         assert msg.metadata.notification_type == NotificationType.RESET_PASSWORD
         assert msg.payload.recipient_email == reset_password_payload.recipient_email
 
-    def test_notification_id_in_response_matches_db_record(self, engine, reset_password_payload, mocker):
+    def test_notification_id_in_response_matches_db_record(
+        self, engine, reset_password_payload, mocker
+    ):
         from notification_service.service.server import NotificationServiceServicer
 
         patched_publisher(mocker)
         servicer = NotificationServiceServicer()
-        response = servicer.SendNotification(_build_request(reset_password_payload), MagicMock())
+        response = servicer.SendNotification(
+            _build_request(reset_password_payload), MagicMock()
+        )
 
         assert response.success is True
         notification = _get_notification(engine, response.notification_id)
         assert notification is not None
         assert str(notification.id) == response.notification_id
 
-    def test_unknown_notification_type_returns_failure(self, reset_password_payload, mocker):
+    def test_unknown_notification_type_returns_failure(
+        self, reset_password_payload, mocker
+    ):
         from notification_service.service.server import NotificationServiceServicer
 
         patched_publisher(mocker)
         servicer = NotificationServiceServicer()
-        request = _build_request(reset_password_payload, notification_type="NONEXISTENT_TYPE")
+        request = _build_request(
+            reset_password_payload, notification_type="NONEXISTENT_TYPE"
+        )
         response = servicer.SendNotification(request, MagicMock())
 
         assert response.success is False
@@ -114,7 +134,9 @@ class TestSendNotification:
 
 def _insert_notifications(engine, notifications: list[NotificationTable]) -> None:
     async def _async():
-        sm = async_sessionmaker(class_=AsyncSession, expire_on_commit=False, bind=engine)
+        sm = async_sessionmaker(
+            class_=AsyncSession, expire_on_commit=False, bind=engine
+        )
         async with sm() as s:
             for notification in notifications:
                 s.add(notification)
@@ -219,4 +241,7 @@ class TestListNotifications:
         assert second_page.success is True
         assert first_page.total == 3
         assert second_page.total == 3
-        assert first_page.notifications[0].notification_id != second_page.notifications[0].notification_id
+        assert (
+            first_page.notifications[0].notification_id
+            != second_page.notifications[0].notification_id
+        )

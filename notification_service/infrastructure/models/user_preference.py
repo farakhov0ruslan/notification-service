@@ -1,12 +1,9 @@
 from typing import Optional
 from uuid import UUID
 
-from notification_registry import NotificationChannel
-from notification_registry import NotificationType
 from sqlalchemy import TEXT
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Column
-from sqlmodel import Enum
 from sqlmodel import Field
 from utils_library.AlchemyRepository import BaseUUIDModel
 
@@ -32,29 +29,9 @@ class UserNotificationPreferenceTable(BaseUUIDModel, table=True):
 
     user_id: UUID = Field(index=True)
 
-    notification_type: NotificationType = Field(
-        sa_column=Column(
-            Enum(
-                NotificationType,
-                schema=NotificationDB.notification.schema,
-                name="notificationtype",
-                create_type=False,
-            ),
-            index=True,
-        )
-    )
+    notification_type: str = Field(sa_column=Column(TEXT, index=True))
 
-    channel: NotificationChannel = Field(
-        sa_column=Column(
-            Enum(
-                NotificationChannel,
-                schema=NotificationDB.notification.schema,
-                name="notificationchannel",
-                create_type=False,
-            ),
-            index=True,
-        )
-    )
+    channel: str = Field(sa_column=Column(TEXT, index=True))
 
     recipient_address: Optional[str] = Field(
         default=None,

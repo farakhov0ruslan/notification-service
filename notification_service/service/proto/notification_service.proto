@@ -19,13 +19,13 @@ message SendNotificationRequest {
     optional string channel = 2;
     optional string priority = 3;
     optional string recipient_id = 4;
-    optional string recipient_email = 5;
-    optional string recipient_phone = 6;
-    optional string webhook_url = 7;
+    reserved 5, 6, 7;
+    reserved "recipient_email", "recipient_phone", "webhook_url";
     reserved 8;
     reserved "subject";
     string payload_json = 9;
     optional string scheduled_at = 10;
+    optional string recipient_address = 14;
 }
 
 message SendNotificationResponse {
@@ -49,7 +49,8 @@ message GetNotificationStatusResponse {
     string channel = 4;
     string notification_type = 5;
     optional string last_error = 6;
-    int32 retry_count = 7;
+    reserved 7;
+    reserved "retry_count";
     optional string scheduled_at = 8;
     optional string sent_at = 9;
     reserved 10;
@@ -87,16 +88,19 @@ message NotificationItem {
     string priority = 4;
     string status = 5;
     optional string recipient_id = 6;
-    optional string recipient_email = 7;
+    reserved 7;
+    reserved "recipient_email";
     reserved 8;
     reserved "subject";
     optional string last_error = 9;
-    int32 retry_count = 10;
+    reserved 10;
+    reserved "retry_count";
     optional string scheduled_at = 11;
     optional string sent_at = 12;
     reserved 13;
     reserved "delivered_at";
     string created_at = 14;
+    optional string recipient_address = 15;
 }
 
 message ListNotificationsResponse {

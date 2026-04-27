@@ -19,13 +19,17 @@ class CRUDUserPreference(
     crud.CRUDBaseDelete[UserNotificationPreferenceTable],
     crud.CRUDBaseUpdate[UserNotificationPreferenceTable],
 ):
-    def __init__(self, model: type[UserNotificationPreferenceTable], session: AsyncSession):
+    def __init__(
+        self, model: type[UserNotificationPreferenceTable], session: AsyncSession
+    ):
         crud.CRUDBaseCreate.__init__(self, model, session)
         crud.CRUDBaseSelect.__init__(self, model, session)
         crud.CRUDBaseDelete.__init__(self, model, session)
         crud.CRUDBaseUpdate.__init__(self, model, session)
 
-    async def get_by_user(self, user_id: UUID) -> Sequence[UserNotificationPreferenceTable]:
+    async def get_by_user(
+        self, user_id: UUID
+    ) -> Sequence[UserNotificationPreferenceTable]:
         stmt = select(UserNotificationPreferenceTable).where(
             UserNotificationPreferenceTable.user_id == user_id
         )
@@ -79,15 +83,13 @@ class CRUDUserPreference(
         self,
         user_id: UUID,
         notification_type: NotificationType,
-        recipient_email: Optional[str],
-        recipient_phone: Optional[str],
-        webhook_url: Optional[str],
+        recipient_address: Optional[str] = None,
     ) -> list[UserNotificationPreferenceTable]:
         """
         Lazy init: if user has no preferences for this notification_type, create them.
 
         Priority order:
-        1. Explicit recipient data from the current request.
+        1. Explicit recipient_address from the current request (stored for all applicable channels).
         2. Copy channels from the user's preferences for OTHER notification types —
            handles the case where a new notification_type is added to the registry
            after users have already configured their preferences.
@@ -101,24 +103,17 @@ class CRUDUserPreference(
 
         defaults = []
 
-        # Phase 1: build from explicit request data — driven by channel.recipient_field
-        address_map: dict[str, Optional[str]] = {
-            "recipient_email": recipient_email,
-            "recipient_phone": recipient_phone,
-            "webhook_url": webhook_url,
-        }
-        for channel in NotificationChannel:
-            field = channel.recipient_field
-            if field is None:
-                continue  # PLATFORM is opt-in, never auto-created here
-            address = address_map.get(field)
-            if address:
+        # Phase 1: build from explicit request data — one address across all applicable channels
+        if recipient_address:
+            for channel in NotificationChannel:
+                if channel.recipient_field is None:
+                    continue  # PLATFORM is opt-in, never auto-created here
                 defaults.append(
                     UserNotificationPreferenceTable(
                         user_id=user_id,
                         notification_type=notification_type,
                         channel=channel,
-                        recipient_address=address,
+                        recipient_address=recipient_address,
                     )
                 )
 

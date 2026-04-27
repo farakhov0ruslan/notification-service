@@ -1,6 +1,4 @@
-from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
-from uuid import uuid4
 
 from notification_registry import LocalNotificationClient
 from notification_registry import NotificationChannel
@@ -26,7 +24,9 @@ def patched_publisher(mocker: MockerFixture) -> MagicMock:
     return publisher
 
 
-def build_reset_password_message(payload: ResetPasswordPayload | None = None) -> NotificationMessage:
+def build_reset_password_message(
+    payload: ResetPasswordPayload | None = None,
+) -> NotificationMessage:
     p = payload or ResetPasswordPayloadFactory.build()
     return NotificationMessage(
         metadata=NotificationMetadata(

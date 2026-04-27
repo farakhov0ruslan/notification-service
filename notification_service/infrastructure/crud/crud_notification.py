@@ -25,9 +25,13 @@ class CRUDNotification(
         crud.CRUDBaseDelete.__init__(self, model, session)
         crud.CRUDBaseUpdate.__init__(self, model, session)
 
-    async def get(self, *, id: UUID, ignore_deleted: bool = True) -> Optional[NotificationTable]:
+    async def get(
+        self, *, id: UUID, ignore_deleted: bool = True
+    ) -> Optional[NotificationTable]:
         stmt = select(NotificationTable).where(NotificationTable.id == id)
-        results = await self.get_multi(query=stmt, limit=1, ignore_deleted=ignore_deleted)
+        results = await self.get_multi(
+            query=stmt, limit=1, ignore_deleted=ignore_deleted
+        )
         return results[0] if results else None
 
     async def get_by_recipient_id(
@@ -38,9 +42,7 @@ class CRUDNotification(
         )
         return await self.get_multi(query=stmt, limit=limit)
 
-    async def get_by_external_id(
-        self, external_id: str
-    ) -> Optional[NotificationTable]:
+    async def get_by_external_id(self, external_id: str) -> Optional[NotificationTable]:
         stmt = select(NotificationTable).where(
             NotificationTable.external_id == external_id
         )
@@ -56,19 +58,6 @@ class CRUDNotification(
             NotificationTable.channel == channel,
             (NotificationTable.scheduled_at.is_(None))
             | (NotificationTable.scheduled_at <= now),
-        )
-        return await self.get_multi(query=stmt, limit=limit)
-
-    async def get_failed_for_retry(
-        self, channel: NotificationChannel, limit: int = 100
-    ) -> Sequence[NotificationTable]:
-        now = datetime.utcnow()
-        stmt = select(NotificationTable).where(
-            NotificationTable.status == NotificationStatus.FAILED,
-            NotificationTable.channel == channel,
-            NotificationTable.retry_count < NotificationTable.max_retries,
-            NotificationTable.next_retry_at.is_not(None),
-            NotificationTable.next_retry_at <= now,
         )
         return await self.get_multi(query=stmt, limit=limit)
 
@@ -123,11 +112,15 @@ class CRUDNotification(
         status: NotificationStatus | None = None,
         channel: NotificationChannel | None = None,
     ) -> int:
-        stmt = select(func.count()).select_from(NotificationTable).where(
-            *self._list_filters(
-                recipient_id=recipient_id,
-                status=status,
-                channel=channel,
+        stmt = (
+            select(func.count())
+            .select_from(NotificationTable)
+            .where(
+                *self._list_filters(
+                    recipient_id=recipient_id,
+                    status=status,
+                    channel=channel,
+                )
             )
         )
         result = await self.session.exec(stmt)
@@ -150,4 +143,3 @@ class CRUDNotification(
         await self.session.commit()
         await self.session.refresh(notification)
         return notification
-

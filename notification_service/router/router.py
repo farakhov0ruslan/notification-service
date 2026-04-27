@@ -39,14 +39,14 @@ class NotificationRouter:
             retry_delay=NOTIFICATION_ROUTER_CONFIG.retry_delay,
         )
         self._loop = asyncio.new_event_loop()
-        self._loop_thread = threading.Thread(
-            target=self._loop.run_forever, daemon=True
-        )
+        self._loop_thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._loop_thread.start()
         LOGGER.debug("NotificationRouter initialized, async loop thread started")
 
     def _handle_message(self, body: bytes) -> None:
-        LOGGER.debug(f"Message received from queue ({len(body)} bytes), dispatching to async loop")
+        LOGGER.debug(
+            f"Message received from queue ({len(body)} bytes), dispatching to async loop"
+        )
         future = asyncio.run_coroutine_threadsafe(
             self._handle_message_async(body), self._loop
         )

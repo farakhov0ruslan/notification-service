@@ -51,7 +51,7 @@ def engine(db_path):
             result = await conn.execute(
                 sqlalchemy.text("SELECT name FROM sqlite_master WHERE type='table'")
             )
-            print(f"\nSQLite tables created: {[r[0] for r in result.fetchall()]}")
+            print(f"\nSQLite tables created: {[r[0] for r in result.fetchall()]}") # noqa: T201
 
     asyncio.run(_setup())
     yield _engine
@@ -61,6 +61,7 @@ def engine(db_path):
 @pytest.fixture(scope="session", autouse=True)
 def patch_pool(engine):
     """Redirect NOTIFICATION_POOL to SQLite for the entire test session."""
+
     def fake_pool():
         return make_session_maker(engine)
 

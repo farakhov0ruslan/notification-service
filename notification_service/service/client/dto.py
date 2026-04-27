@@ -11,13 +11,13 @@ from notification_service.infrastructure.enums import NotificationStatus
 
 class SendNotificationRequest(BaseModel):
     notification_type: NotificationType | str
-    channel: NotificationChannel | str | None = None  # optional: resolved from preferences when absent
+    channel: NotificationChannel | str | None = (
+        None  # optional: resolved from preferences when absent
+    )
     payload: BaseNotificationPayload
     priority: NotificationPriority | str | None = None
     recipient_id: str | None = None
-    recipient_email: str | None = None
-    recipient_phone: str | None = None
-    webhook_url: str | None = None
+    recipient_address: str | None = None
     scheduled_at: str | None = None
 
     model_config = {"arbitrary_types_allowed": True}
@@ -55,7 +55,6 @@ class NotificationStatusResult(BaseModel):
     channel: Optional[str] = None
     notification_type: Optional[str] = None
     last_error: Optional[str] = None
-    retry_count: int = 0
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None
     created_at: Optional[str] = None
@@ -87,9 +86,8 @@ class NotificationItem(BaseModel):
     priority: str
     status: str
     recipient_id: Optional[str] = None
-    recipient_email: Optional[str] = None
+    recipient_address: Optional[str] = None
     last_error: Optional[str] = None
-    retry_count: int = 0
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None
     created_at: str

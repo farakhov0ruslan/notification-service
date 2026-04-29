@@ -1,0 +1,9 @@
+include:
+  - project: "sales-trigger/sdk/gitlab-ci-cd"
+    file: ".app-ci.yml"
+
+variables:
+  MIGRATION_TYPE: "alembic"
+  TEST_GROUP: "python-full"
+  PACKAGE_PUBLISH: "uv"
+  LINT: "ruff"

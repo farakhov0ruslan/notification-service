@@ -1,0 +1,139 @@
+// python -m grpc_tools.protoc -I./ --python_out=./ --pyi_out=./ --grpc_python_out=./ ./notification_service/service/proto/notification_service.proto
+syntax = "proto3";
+
+package notification_service;
+
+service NotificationService {
+    rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+    rpc GetNotificationStatus(GetNotificationStatusRequest) returns (GetNotificationStatusResponse);
+    rpc CancelNotification(CancelNotificationRequest) returns (CancelNotificationResponse);
+    rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+    rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse);
+    rpc SetUserPreferences(SetUserPreferencesRequest) returns (SetUserPreferencesResponse);
+}
+
+// ─── SendNotification ───────────────────────────────────────────────
+
+message SendNotificationRequest {
+    string notification_type = 1;
+    optional string channel = 2;
+    optional string priority = 3;
+    optional string recipient_id = 4;
+    reserved 5, 6, 7;
+    reserved "recipient_email", "recipient_phone", "webhook_url";
+    reserved 8;
+    reserved "subject";
+    string payload_json = 9;
+    optional string scheduled_at = 10;
+    optional string recipient_address = 14;
+}
+
+message SendNotificationResponse {
+    bool success = 1;
+    string notification_id = 2;
+    string status = 3;
+    string message = 4;
+    repeated string notification_ids = 5;
+}
+
+// ─── GetNotificationStatus ──────────────────────────────────────────
+
+message GetNotificationStatusRequest {
+    string notification_id = 1;
+}
+
+message GetNotificationStatusResponse {
+    bool success = 1;
+    string notification_id = 2;
+    string status = 3;
+    string channel = 4;
+    string notification_type = 5;
+    optional string last_error = 6;
+    reserved 7;
+    reserved "retry_count";
+    optional string scheduled_at = 8;
+    optional string sent_at = 9;
+    reserved 10;
+    reserved "delivered_at";
+    string created_at = 11;
+}
+
+// ─── CancelNotification ────────────────────────────────────────────
+
+message CancelNotificationRequest {
+    string notification_id = 1;
+}
+
+message CancelNotificationResponse {
+    bool success = 1;
+    string notification_id = 2;
+    string status = 3;
+    string message = 4;
+}
+
+// ─── ListNotifications ─────────────────────────────────────────────
+
+message ListNotificationsRequest {
+    optional string recipient_id = 1;
+    int32 limit = 4;
+    int32 offset = 5;
+}
+
+message NotificationItem {
+    string notification_id = 1;
+    string notification_type = 2;
+    string channel = 3;
+    string priority = 4;
+    string status = 5;
+    optional string recipient_id = 6;
+    reserved 7;
+    reserved "recipient_email";
+    reserved 8;
+    reserved "subject";
+    optional string last_error = 9;
+    reserved 10;
+    reserved "retry_count";
+    optional string scheduled_at = 11;
+    optional string sent_at = 12;
+    reserved 13;
+    reserved "delivered_at";
+    string created_at = 14;
+    optional string recipient_address = 15;
+    optional string body = 16;
+}
+
+message ListNotificationsResponse {
+    bool success = 1;
+    repeated NotificationItem notifications = 2;
+    int32 total = 3;
+}
+
+// ─── UserPreferences ───────────────────────────────────────────────
+
+message UserPreferenceItem {
+    string user_id = 1;
+    string notification_type = 2;
+    string channel = 3;
+    optional string recipient_address = 4;
+}
+
+message GetUserPreferencesRequest {
+    string user_id = 1;
+    optional string notification_type = 2;
+}
+
+message GetUserPreferencesResponse {
+    bool success = 1;
+    repeated UserPreferenceItem preferences = 2;
+}
+
+message SetUserPreferencesRequest {
+    string user_id = 1;
+    string notification_type = 2;
+    repeated UserPreferenceItem preferences = 3;
+}
+
+message SetUserPreferencesResponse {
+    bool success = 1;
+    string message = 2;
+}

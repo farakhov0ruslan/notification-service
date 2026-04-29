@@ -14,20 +14,23 @@ readme = "README.md"
 requires-python = ">=3.12.4,<4.0"
 dependencies = [
     "utils-library[full]>=0.0.120",
+    "pytest_asyncio",
     "dishka>=1.6.0",
     "schedule >=1.2.2",
     "alembic-postgresql-enum >= 1.7.0",
     "apify_client",
     "aiosmtplib>=5.0.0",
     "jinja2>=3.1.6",
-    "notification-registry==0.0.1rc1+local.f096738",
-    "grpcio>=1.60",
-    "grpcio-tools>=1.60",
-    "fire>=0.6",
     "greenlet>=3.0",
+    "notification-registry==0.0.1rc1+local.d015444",
 ]
 
 [dependency-groups]
+dev = [
+    "aiosqlite>=0.21.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+]
 test = [
     "utils-library[testing]>=0.0.113",
     "pytest>=8",
@@ -69,7 +72,6 @@ force-single-line=true
 # --- RUFF CONFIG END
 #[tool.uv.sources]
 #notification-registry = { path = "../notification-registry" }
-#email-handler = { path = "../email-handler" }
 
 [tool.setuptools.packages.find]
 include = ["notification_service*"]

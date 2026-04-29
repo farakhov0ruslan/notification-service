@@ -87,6 +87,7 @@ class NotificationItem(BaseModel):
     status: str
     recipient_id: Optional[str] = None
     recipient_address: Optional[str] = None
+    body: Optional[str] = None
     last_error: Optional[str] = None
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None

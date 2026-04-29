@@ -17,6 +17,14 @@ from tests.utils.factories import ResetPasswordPayloadFactory
 from tests.utils.factories import WebhookResetPasswordPayloadFactory
 
 
+_ADDRESS = {
+    NotificationChannel.EMAIL: "test@example.com",
+    NotificationChannel.WEBHOOK: "https://hooks.example.com/notify",
+    NotificationChannel.PLATFORM: None,
+    NotificationChannel.WHATSAPP: "+79991234567",
+}
+
+
 def _make_message(
     channel: NotificationChannel = NotificationChannel.EMAIL,
 ) -> NotificationMessage:
@@ -30,6 +38,7 @@ def _make_message(
             notification_type=NotificationType.RESET_PASSWORD,
             channel=channel,
             priority=NotificationPriority.NORMAL,
+            recipient_address=_ADDRESS[channel],
         ),
         payload=payload,
     )
@@ -73,7 +82,7 @@ def _make_router_with_mocks(mocker):
     from notification_service.router.router import NotificationRouter
 
     mocker.patch("notification_service.router.router.RabbitMQNotificationClient")
-    mocker.patch("notification_service.router.router.RabbitConsumer")
+    mocker.patch("notification_service.router.router._PriorityGeneralConsumer")
     mocker.patch("notification_service.router.router.ThreadedRabbitConsumer")
     mocker.patch("notification_service.router.router.RABBIT_MQ_CONFIG")
     mocker.patch("notification_service.router.router.threading.Thread")

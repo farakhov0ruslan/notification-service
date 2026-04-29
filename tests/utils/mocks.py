@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from notification_registry import LocalNotificationClient
 from notification_registry import NotificationChannel
@@ -7,20 +8,20 @@ from notification_registry import NotificationMetadata
 from notification_registry import NotificationPriority
 from notification_registry import NotificationType
 from notification_registry import ResetPasswordPayload
-from pytest_mock import MockerFixture
 
 from tests.utils.factories import ResetPasswordPayloadFactory
 
 
-def patched_publisher(mocker: MockerFixture) -> MagicMock:
-    """Patch RabbitPublisher in server to a MagicMock usable as context manager."""
+def patched_publisher() -> MagicMock:
+    """Patch PriorityRabbitPublisher in server to a MagicMock usable as context manager."""
     publisher = MagicMock()
     publisher.__enter__ = MagicMock(return_value=publisher)
     publisher.__exit__ = MagicMock(return_value=False)
-    mocker.patch(
-        "notification_service.service.server.RabbitPublisher",
+    patcher = patch(
+        "notification_service.service.server.PriorityRabbitPublisher",
         return_value=publisher,
     )
+    patcher.start()
     return publisher
 
 

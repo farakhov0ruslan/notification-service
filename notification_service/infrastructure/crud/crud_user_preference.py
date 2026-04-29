@@ -106,8 +106,8 @@ class CRUDUserPreference(
         # Phase 1: build from explicit request data — one address across all applicable channels
         if recipient_address:
             for channel in NotificationChannel:
-                if channel.recipient_field is None:
-                    continue  # PLATFORM is opt-in, never auto-created here
+                if channel == NotificationChannel.PLATFORM:
+                    continue  # PLATFORM is added unconditionally below
                 defaults.append(
                     UserNotificationPreferenceTable(
                         user_id=user_id,
@@ -135,8 +135,17 @@ class CRUDUserPreference(
                         )
                     )
 
-        if not defaults:
-            return []
+        # PLATFORM is always included — opt-out model for in-app channel.
+        # recipient_address = str(user_id) is metadata only; platform-handler uses user_id from payload.
+        if not any(d.channel == NotificationChannel.PLATFORM for d in defaults):
+            defaults.append(
+                UserNotificationPreferenceTable(
+                    user_id=user_id,
+                    notification_type=notification_type,
+                    channel=NotificationChannel.PLATFORM,
+                    recipient_address=str(user_id),
+                )
+            )
 
         try:
             for pref in defaults:

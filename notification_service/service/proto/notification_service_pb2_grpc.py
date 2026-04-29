@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from notification_service.service.proto import notification_service_pb2 as notification__service_dot_service_dot_proto_dot_notification__service__pb2
+from notification_service.service.proto import notification_service_pb2 as notification__service__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in notification_service/service/proto/notification_service_pb2_grpc.py depends on'
+        + ' but the generated code in notification_service_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,33 +36,33 @@ class NotificationServiceStub(object):
         """
         self.SendNotification = channel.unary_unary(
                 '/notification_service.NotificationService/SendNotification',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationResponse.FromString,
+                request_serializer=notification__service__pb2.SendNotificationRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.SendNotificationResponse.FromString,
                 _registered_method=True)
         self.GetNotificationStatus = channel.unary_unary(
                 '/notification_service.NotificationService/GetNotificationStatus',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusResponse.FromString,
+                request_serializer=notification__service__pb2.GetNotificationStatusRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.GetNotificationStatusResponse.FromString,
                 _registered_method=True)
         self.CancelNotification = channel.unary_unary(
                 '/notification_service.NotificationService/CancelNotification',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationResponse.FromString,
+                request_serializer=notification__service__pb2.CancelNotificationRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.CancelNotificationResponse.FromString,
                 _registered_method=True)
         self.ListNotifications = channel.unary_unary(
                 '/notification_service.NotificationService/ListNotifications',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsResponse.FromString,
+                request_serializer=notification__service__pb2.ListNotificationsRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.ListNotificationsResponse.FromString,
                 _registered_method=True)
         self.GetUserPreferences = channel.unary_unary(
                 '/notification_service.NotificationService/GetUserPreferences',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesResponse.FromString,
+                request_serializer=notification__service__pb2.GetUserPreferencesRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.GetUserPreferencesResponse.FromString,
                 _registered_method=True)
         self.SetUserPreferences = channel.unary_unary(
                 '/notification_service.NotificationService/SetUserPreferences',
-                request_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesRequest.SerializeToString,
-                response_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesResponse.FromString,
+                request_serializer=notification__service__pb2.SetUserPreferencesRequest.SerializeToString,
+                response_deserializer=notification__service__pb2.SetUserPreferencesResponse.FromString,
                 _registered_method=True)
 
 
@@ -110,33 +110,33 @@ def add_NotificationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SendNotification': grpc.unary_unary_rpc_method_handler(
                     servicer.SendNotification,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.SendNotificationRequest.FromString,
+                    response_serializer=notification__service__pb2.SendNotificationResponse.SerializeToString,
             ),
             'GetNotificationStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetNotificationStatus,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.GetNotificationStatusRequest.FromString,
+                    response_serializer=notification__service__pb2.GetNotificationStatusResponse.SerializeToString,
             ),
             'CancelNotification': grpc.unary_unary_rpc_method_handler(
                     servicer.CancelNotification,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.CancelNotificationRequest.FromString,
+                    response_serializer=notification__service__pb2.CancelNotificationResponse.SerializeToString,
             ),
             'ListNotifications': grpc.unary_unary_rpc_method_handler(
                     servicer.ListNotifications,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.ListNotificationsRequest.FromString,
+                    response_serializer=notification__service__pb2.ListNotificationsResponse.SerializeToString,
             ),
             'GetUserPreferences': grpc.unary_unary_rpc_method_handler(
                     servicer.GetUserPreferences,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.GetUserPreferencesRequest.FromString,
+                    response_serializer=notification__service__pb2.GetUserPreferencesResponse.SerializeToString,
             ),
             'SetUserPreferences': grpc.unary_unary_rpc_method_handler(
                     servicer.SetUserPreferences,
-                    request_deserializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesRequest.FromString,
-                    response_serializer=notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesResponse.SerializeToString,
+                    request_deserializer=notification__service__pb2.SetUserPreferencesRequest.FromString,
+                    response_serializer=notification__service__pb2.SetUserPreferencesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -164,8 +164,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/SendNotification',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.SendNotificationResponse.FromString,
+            notification__service__pb2.SendNotificationRequest.SerializeToString,
+            notification__service__pb2.SendNotificationResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -191,8 +191,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/GetNotificationStatus',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetNotificationStatusResponse.FromString,
+            notification__service__pb2.GetNotificationStatusRequest.SerializeToString,
+            notification__service__pb2.GetNotificationStatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -218,8 +218,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/CancelNotification',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.CancelNotificationResponse.FromString,
+            notification__service__pb2.CancelNotificationRequest.SerializeToString,
+            notification__service__pb2.CancelNotificationResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -245,8 +245,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/ListNotifications',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.ListNotificationsResponse.FromString,
+            notification__service__pb2.ListNotificationsRequest.SerializeToString,
+            notification__service__pb2.ListNotificationsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -272,8 +272,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/GetUserPreferences',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.GetUserPreferencesResponse.FromString,
+            notification__service__pb2.GetUserPreferencesRequest.SerializeToString,
+            notification__service__pb2.GetUserPreferencesResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -299,8 +299,8 @@ class NotificationService(object):
             request,
             target,
             '/notification_service.NotificationService/SetUserPreferences',
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesRequest.SerializeToString,
-            notification__service_dot_service_dot_proto_dot_notification__service__pb2.SetUserPreferencesResponse.FromString,
+            notification__service__pb2.SetUserPreferencesRequest.SerializeToString,
+            notification__service__pb2.SetUserPreferencesResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -22,7 +22,7 @@ from pydantic import EmailStr
 from pydantic import TypeAdapter
 from utils_library.Logging.log import configure_logger
 from utils_library.Logging.log import get_logger
-from utils_library.RabbitMQ.publisher import RabbitPublisher
+from notification_registry.client import PriorityRabbitPublisher
 from utils_library.RabbitMQ.rabbitmq import RABBIT_MQ_CONFIG
 
 from notification_service.infrastructure.enums import NotificationStatus
@@ -53,6 +53,7 @@ def _notification_to_item(n: NotificationTable) -> pb2.NotificationItem:
         status=n.status.value,
         recipient_id=str(n.recipient_id) if n.recipient_id else None,
         recipient_address=n.recipient_address,
+        body=n.body,
         last_error=n.last_error,
         scheduled_at=_dt_to_str(n.scheduled_at),
         sent_at=_dt_to_str(n.sent_at),
@@ -81,7 +82,7 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
             target=self._loop.run_forever, daemon=True, name="grpc-async-loop"
         )
         self._loop_thread.start()
-        self._publisher = RabbitPublisher(rabbit_config=RABBIT_MQ_CONFIG)
+        self._publisher = PriorityRabbitPublisher(rabbit_config=RABBIT_MQ_CONFIG)
         self._publisher.__enter__()
         self._closed = False
 
@@ -116,22 +117,23 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
             base_payload = payload_cls.model_validate_json(request.payload_json)
             LOGGER.debug(f"Payload validated: type={notification_type.value}")
 
-            # Resolve dispatch list: [(channel, enriched_payload), ...]
+            # Resolve dispatch list: [(channel, recipient_address), ...]
             if request.HasField("channel") and request.channel:
                 channel = NotificationChannel(request.channel)
-                enriched = self._run(
-                    self._enrich_payload_for_channel(base_payload, channel, request)
+                address = self._run(
+                    self._resolve_recipient_address(channel, request)
                 )
-                if enriched is None:
-                    required = channel.recipient_field or ""
+                if address is None and channel != NotificationChannel.PLATFORM:
                     return pb2.SendNotificationResponse(
                         success=False,
                         message=(
-                            f"Required field '{required}' for channel '{channel.value}' "
+                            f"Required recipient address for channel '{channel.value}' "
                             f"not found in request or user preferences"
                         ),
                     )
-                dispatch_list = [(channel, enriched)]
+                dispatch_list = [(channel, address)]
+                if request.HasField("recipient_id") and request.recipient_id:
+                    self._run(self._init_preferences_if_needed(request, notification_type))
 
             elif request.HasField("recipient_id") and request.recipient_id:
                 dispatch_list = self._run(
@@ -152,14 +154,15 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
                 )
 
             notification_ids = []
-            for ch, enriched_payload in dispatch_list:
+            for ch, address in dispatch_list:
                 message = NotificationMessage(
                     metadata=NotificationMetadata(
                         notification_type=notification_type,
                         channel=ch,
                         priority=priority,
+                        recipient_address=address,
                     ),
-                    payload=enriched_payload,
+                    payload=base_payload,
                 )
 
                 LOGGER.debug(
@@ -180,6 +183,7 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
                     message=body.decode("utf-8"),
                     queue=NOTIFICATION_ROUTER_CONFIG.input_queue,
                     declare_queue=True,
+                    priority=message.metadata.priority.rabbitmq_priority,
                 )
                 LOGGER.info(
                     f"Notification id={created.id} queued in {NOTIFICATION_ROUTER_CONFIG.input_queue!r}"
@@ -200,54 +204,50 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
             LOGGER.exception("SendNotification failed", exc_info=e)
             return pb2.SendNotificationResponse(success=False, message=str(e))
 
-    async def _enrich_payload_for_channel(
+    async def _resolve_recipient_address(
         self,
-        payload,
         channel: NotificationChannel,
         request,
-    ):
+    ) -> Optional[str]:
         """
-        Enrich payload with recipient data needed by the given channel.
-        Priority: explicit request field → user preferences.
-        Returns None if the required field is missing from both sources.
+        Resolve delivery address for the given channel.
+        Priority: explicit request.recipient_address → user preferences.
+        Returns None for PLATFORM (no address needed) or if address is missing.
         """
-        field = channel.recipient_field
-        if field is None:
-            # PLATFORM: user_id already embedded in payload; no enrichment needed.
-            return payload
-
-        user_id: Optional[UUID] = None
-        if request.HasField("recipient_id") and request.recipient_id:
-            user_id = UUID(request.recipient_id)
-
-        pref: Optional[UserNotificationPreferenceTable] = None
-        if user_id is not None:
-            async with IOC_CONTAINER(scope=dishka.Scope.REQUEST) as ioc:
-                repo = await ioc.get(NotificationRepository)
-                pref = await repo.user_preferences.get_by_user_and_channel(
-                    user_id, channel
-                )
+        if channel == NotificationChannel.PLATFORM:
+            return None
 
         address = (
-            (request.HasField("recipient_address") and request.recipient_address)
-            or None
-            if hasattr(request, "HasField")
+            request.recipient_address
+            if hasattr(request, "HasField") and request.HasField("recipient_address")
             else getattr(request, "recipient_address", None)
-        ) or (pref.recipient_address if pref else None)
+        ) or None
 
         if not address:
-            return None
-        return payload.model_copy(update={field: address})
+            user_id: Optional[UUID] = None
+            if request.HasField("recipient_id") and request.recipient_id:
+                user_id = UUID(request.recipient_id)
+
+            if user_id is not None:
+                async with IOC_CONTAINER(scope=dishka.Scope.REQUEST) as ioc:
+                    repo = await ioc.get(NotificationRepository)
+                    pref = await repo.user_preferences.get_by_user_and_channel(
+                        user_id, channel
+                    )
+                    if pref:
+                        address = pref.recipient_address or None
+
+        return address or None
 
     async def _resolve_from_preferences(
         self,
         base_payload,
         request,
         notification_type: NotificationType,
-    ) -> list[tuple[NotificationChannel, object]]:
+    ) -> list[tuple[NotificationChannel, Optional[str]]]:
         """
         Resolve dispatch list from user preferences, running lazy init on first call.
-        Returns list of (channel, enriched_payload) tuples.
+        Returns list of (channel, recipient_address) tuples.
         """
         user_id = UUID(request.recipient_id)
         recipient_address = (
@@ -271,18 +271,23 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
         result = []
         for pref in prefs:
             ch = NotificationChannel(pref.channel)
-            field = ch.recipient_field
-            if field is None:
-                # PLATFORM: user_id already in payload; no enrichment needed.
-                result.append((ch, base_payload))
-                continue
-            if pref.recipient_address:
-                enriched = base_payload.model_copy(
-                    update={field: pref.recipient_address}
-                )
-                result.append((ch, enriched))
+            if ch == NotificationChannel.PLATFORM:
+                result.append((ch, None))
+            elif pref.recipient_address:
+                result.append((ch, pref.recipient_address))
 
         return result
+
+    async def _init_preferences_if_needed(self, request, notification_type) -> None:
+        user_id = UUID(request.recipient_id)
+        async with IOC_CONTAINER(scope=dishka.Scope.REQUEST) as ioc:
+            repo = await ioc.get(NotificationRepository)
+            for nt in NotificationType:
+                await repo.user_preferences.ensure_defaults(
+                    user_id=user_id,
+                    notification_type=nt,
+                    recipient_address=None,
+                )
 
     async def _create_notification(
         self, message: NotificationMessage, request
@@ -295,17 +300,10 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
         if request.HasField("recipient_id") and request.recipient_id:
             recipient_id = UUID(request.recipient_id)
 
-        field = message.metadata.channel.recipient_field
-        recipient_address = (
-            str(getattr(message.payload, field))
-            if field is not None and getattr(message.payload, field, None) is not None
-            else None
-        )
-
         notification = NotificationTable(
             id=message.metadata.notification_id,
             recipient_id=recipient_id,
-            recipient_address=recipient_address,
+            recipient_address=message.metadata.recipient_address,
             notification_type=message.metadata.notification_type.value,
             channel=message.metadata.channel.value,
             priority=message.metadata.priority,
@@ -445,31 +443,21 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
                 if request.HasField("recipient_id") and request.recipient_id
                 else None
             )
-            status = (
-                NotificationStatus(request.status)
-                if request.HasField("status") and request.status
-                else None
-            )
-            channel = (
-                NotificationChannel(request.channel)
-                if request.HasField("channel") and request.channel
-                else None
-            )
             LOGGER.debug(
                 f"ListNotifications filters: recipient_id={recipient_id}, "
-                f"status={status}, channel={channel}, limit={limit}, offset={offset}"
+                f"channel=platform, limit={limit}, offset={offset}"
             )
             notifications = await repo.notifications.list_notifications(
                 recipient_id=recipient_id,
-                status=status,
-                channel=channel,
+                status=None,
+                channel=NotificationChannel.PLATFORM,
                 limit=limit,
                 offset=offset,
             )
             total = await repo.notifications.count_notifications(
                 recipient_id=recipient_id,
-                status=status,
-                channel=channel,
+                status=None,
+                channel=NotificationChannel.PLATFORM,
             )
 
             items = [_notification_to_item(n) for n in notifications]

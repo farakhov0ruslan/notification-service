@@ -98,18 +98,12 @@ async def grpc_cancel_notification(
 async def grpc_list_notifications(
     *,
     recipient_id: Optional[str] = None,
-    status: Optional[str] = None,
-    channel: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
 ) -> dto.ListNotificationsResult:
     kwargs: dict = {"limit": limit, "offset": offset}
     if recipient_id is not None:
         kwargs["recipient_id"] = recipient_id
-    if status is not None:
-        kwargs["status"] = status
-    if channel is not None:
-        kwargs["channel"] = channel
 
     response: pb2.ListNotificationsResponse = await async_call_grpc(
         NotificationServiceStub,
@@ -129,6 +123,7 @@ async def grpc_list_notifications(
             recipient_address=n.recipient_address
             if n.HasField("recipient_address")
             else None,
+            body=n.body if n.HasField("body") else None,
             last_error=n.last_error if n.HasField("last_error") else None,
             scheduled_at=n.scheduled_at if n.HasField("scheduled_at") else None,
             sent_at=n.sent_at if n.HasField("sent_at") else None,

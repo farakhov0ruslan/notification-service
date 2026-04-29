@@ -75,8 +75,6 @@ message CancelNotificationResponse {
 
 message ListNotificationsRequest {
     optional string recipient_id = 1;
-    optional string status = 2;
-    optional string channel = 3;
     int32 limit = 4;
     int32 offset = 5;
 }
@@ -101,6 +99,7 @@ message NotificationItem {
     reserved "delivered_at";
     string created_at = 14;
     optional string recipient_address = 15;
+    optional string body = 16;
 }
 
 message ListNotificationsResponse {

@@ -7,6 +7,7 @@ import dishka
 import fire
 from notification_registry import RabbitMQNotificationClient
 from notification_registry import deserialize_message
+from pika import BlockingConnection
 from prometheus_client import start_http_server
 from utils_library.Logging.log import configure_logger
 from utils_library.Logging.log import get_logger
@@ -22,6 +23,49 @@ from notification_service.router.config import NOTIFICATION_ROUTER_CONFIG
 
 LOGGER = get_logger(__name__)
 
+# Must match _MAX_QUEUE_PRIORITY in notification-registry/client.py and consumer.py
+_MAX_QUEUE_PRIORITY = 10
+
+
+class _PriorityGeneralConsumer(RabbitConsumer):
+    """RabbitConsumer that declares notification.general with x-max-priority.
+
+    Without this, the general queue is plain FIFO — HIGH-priority messages are
+    processed in arrival order and priority is only respected in channel queues,
+    which is too late to affect ordering.
+    """
+
+    def _connect(self) -> None:
+        LOGGER.info(
+            {
+                "message": "Connecting to RabbitMQ",
+                "username": self._rabbit_config.username,
+                "hosts": self._rabbit_config.hosts,
+                "virtual_host": self._rabbit_config.virtual_host,
+            }
+        )
+        self._connection = BlockingConnection(self._endpoints)
+        self._channel = self._connection.channel()
+        self._channel.basic_qos(prefetch_count=1)
+        self._channel.confirm_delivery()
+        self._channel.queue_declare(
+            queue=self.queue_name,
+            durable=True,
+            auto_delete=False,
+            arguments={"x-max-priority": _MAX_QUEUE_PRIORITY},
+        )
+        self._channel.basic_consume(
+            on_message_callback=self.on_message, queue=self.queue_name
+        )
+        LOGGER.info(
+            {
+                "message": "Connected to RabbitMQ",
+                "username": self._rabbit_config.username,
+                "hosts": str(self._rabbit_config.hosts),
+                "virtual_host": str(self._rabbit_config.virtual_host),
+            }
+        )
+
 
 class NotificationRouter:
     """
@@ -31,7 +75,7 @@ class NotificationRouter:
 
     def __init__(self):
         self._client = RabbitMQNotificationClient(rabbit_config=RABBIT_MQ_CONFIG)
-        self._consumer = RabbitConsumer(
+        self._consumer = _PriorityGeneralConsumer(
             queue_name=NOTIFICATION_ROUTER_CONFIG.input_queue,
             on_message=self._handle_message,
             rabbitmq_config=RABBIT_MQ_CONFIG,

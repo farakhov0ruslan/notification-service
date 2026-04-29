@@ -21,7 +21,7 @@ class NotificationServiceConfig(AbstractMetaConfig):
         },
     )
     prometheus_port: int = field(
-        default=9092,
+        default=9090,
         metadata={
             "docs": "Prometheus metrics port",
             "required": False,

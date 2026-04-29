@@ -85,21 +85,17 @@ class CancelNotificationResponse(_message.Message):
     def __init__(self, success: bool = ..., notification_id: _Optional[str] = ..., status: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
 
 class ListNotificationsRequest(_message.Message):
-    __slots__ = ("recipient_id", "status", "channel", "limit", "offset")
+    __slots__ = ("recipient_id", "limit", "offset")
     RECIPIENT_ID_FIELD_NUMBER: _ClassVar[int]
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    CHANNEL_FIELD_NUMBER: _ClassVar[int]
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     recipient_id: str
-    status: str
-    channel: str
     limit: int
     offset: int
-    def __init__(self, recipient_id: _Optional[str] = ..., status: _Optional[str] = ..., channel: _Optional[str] = ..., limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
+    def __init__(self, recipient_id: _Optional[str] = ..., limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
 class NotificationItem(_message.Message):
-    __slots__ = ("notification_id", "notification_type", "channel", "priority", "status", "recipient_id", "last_error", "scheduled_at", "sent_at", "created_at", "recipient_address")
+    __slots__ = ("notification_id", "notification_type", "channel", "priority", "status", "recipient_id", "last_error", "scheduled_at", "sent_at", "created_at", "recipient_address", "body")
     NOTIFICATION_ID_FIELD_NUMBER: _ClassVar[int]
     NOTIFICATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     CHANNEL_FIELD_NUMBER: _ClassVar[int]
@@ -111,6 +107,7 @@ class NotificationItem(_message.Message):
     SENT_AT_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     RECIPIENT_ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    BODY_FIELD_NUMBER: _ClassVar[int]
     notification_id: str
     notification_type: str
     channel: str
@@ -122,7 +119,8 @@ class NotificationItem(_message.Message):
     sent_at: str
     created_at: str
     recipient_address: str
-    def __init__(self, notification_id: _Optional[str] = ..., notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., status: _Optional[str] = ..., recipient_id: _Optional[str] = ..., last_error: _Optional[str] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., created_at: _Optional[str] = ..., recipient_address: _Optional[str] = ...) -> None: ...
+    body: str
+    def __init__(self, notification_id: _Optional[str] = ..., notification_type: _Optional[str] = ..., channel: _Optional[str] = ..., priority: _Optional[str] = ..., status: _Optional[str] = ..., recipient_id: _Optional[str] = ..., last_error: _Optional[str] = ..., scheduled_at: _Optional[str] = ..., sent_at: _Optional[str] = ..., created_at: _Optional[str] = ..., recipient_address: _Optional[str] = ..., body: _Optional[str] = ...) -> None: ...
 
 class ListNotificationsResponse(_message.Message):
     __slots__ = ("success", "notifications", "total")

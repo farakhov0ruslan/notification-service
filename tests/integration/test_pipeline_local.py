@@ -17,6 +17,10 @@ from tests.utils.factories import WebhookAnalyticsPayloadFactory
 from tests.utils.factories import WebhookResetPasswordPayloadFactory
 
 
+TEST_EMAIL = "test@example.com"
+TEST_WEBHOOK = WEBHOOK_URL
+
+
 def _build_email_message(payload=None) -> NotificationMessage:
     p = payload or ResetPasswordPayloadFactory.build()
     return NotificationMessage(
@@ -24,6 +28,7 @@ def _build_email_message(payload=None) -> NotificationMessage:
             notification_type=NotificationType.RESET_PASSWORD,
             channel=NotificationChannel.EMAIL,
             priority=NotificationPriority.NORMAL,
+            recipient_address=TEST_EMAIL,
         ),
         payload=p,
     )
@@ -39,6 +44,7 @@ def _build_webhook_message(
             notification_type=notification_type,
             channel=NotificationChannel.WEBHOOK,
             priority=NotificationPriority.NORMAL,
+            recipient_address=TEST_WEBHOOK,
         ),
         payload=p,
     )
@@ -69,10 +75,7 @@ class TestLocalPipeline:
             deserialized.metadata.notification_type == NotificationType.RESET_PASSWORD
         )
         assert deserialized.metadata.channel == NotificationChannel.EMAIL
-        assert (
-            deserialized.payload.recipient_email
-            == reset_password_payload.recipient_email
-        )
+        assert deserialized.metadata.recipient_address == TEST_EMAIL
 
     def test_multiple_messages_stored_in_published(self, reset_password_payload):
         client = LocalNotificationClient()
@@ -115,7 +118,7 @@ class TestWebhookLocalPipeline:
         queue_name, _ = client.published[0]
         assert queue_name == NotificationChannel.WEBHOOK.queue_name
 
-    def test_published_body_preserves_webhook_url(self):
+    def test_published_body_preserves_recipient_address(self):
         payload = WebhookResetPasswordPayloadFactory.build()
         message = _build_webhook_message(payload)
         client = LocalNotificationClient()
@@ -125,7 +128,7 @@ class TestWebhookLocalPipeline:
 
         _, body = client.published[0]
         deserialized = deserialize_message(body)
-        assert str(deserialized.payload.webhook_url) == WEBHOOK_URL
+        assert deserialized.metadata.recipient_address == TEST_WEBHOOK
 
     def test_published_body_preserves_notification_type(self):
         message = _build_webhook_message()

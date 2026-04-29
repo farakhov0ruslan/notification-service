@@ -11,6 +11,14 @@ from tests.utils.factories import ResetPasswordPayloadFactory
 from tests.utils.factories import WebhookResetPasswordPayloadFactory
 
 
+_ADDRESS = {
+    NotificationChannel.EMAIL: "test@example.com",
+    NotificationChannel.WEBHOOK: "https://hooks.example.com/notify",
+    NotificationChannel.PLATFORM: None,
+    NotificationChannel.WHATSAPP: "+79991234567",
+}
+
+
 def _make_message(
     channel: NotificationChannel, webhook: bool = False
 ) -> NotificationMessage:
@@ -24,6 +32,7 @@ def _make_message(
             notification_type=NotificationType.RESET_PASSWORD,
             channel=channel,
             priority=NotificationPriority.NORMAL,
+            recipient_address=_ADDRESS[channel],
         ),
         payload=payload,
     )
@@ -65,9 +74,7 @@ class TestDispatch:
 
     def test_whatsapp_raises_not_implemented(self):
         client = LocalNotificationClient()
-        message = _make_message(
-            NotificationChannel.WHATSAPP
-        )  # payload has recipient_phone=None
+        message = _make_message(NotificationChannel.WHATSAPP)
 
         with pytest.raises(NotImplementedError, match="WHATSAPP"):
             dispatch(message, client=client)

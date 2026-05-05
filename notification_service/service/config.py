@@ -14,7 +14,7 @@ class NotificationServiceConfig(AbstractMetaConfig):
         },
     )
     port: int = field(
-        default=46600,
+        default=8888,
         metadata={
             "docs": "gRPC server port",
             "required": False,

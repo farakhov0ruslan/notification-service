@@ -573,6 +573,7 @@ class NotificationServiceServicer(pb2_grpc.NotificationServiceServicer):
 def serve(env: str = "main"):
     configure_logger(__name__, "debug")
     configure_logger("notification_service", "debug")
+    configure_logger("utils_library", "debug")
 
     LOGGER.info(f"Starting notification-service gRPC server in '{env}' mode")
 
